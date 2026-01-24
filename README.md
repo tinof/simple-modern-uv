@@ -32,6 +32,83 @@ template.
 For more installation options, scroll down to
 [How to Use This Template](#how-to-use-this-template).
 
+## macOS Developer Workflow
+
+This section covers the recommended workflow for Python development on macOS using this template.
+
+### Initial Setup (One-Time)
+
+```shell
+# 1. Install uv (the only tool you need)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 2. Install a modern Python
+uv python install 3.13
+
+# 3. Install the template globally (optional - for creating new projects)
+uv tool install git+https://github.com/tinof/simple-modern-uv
+```
+
+### Creating New Projects
+
+```shell
+# Option A: If you installed the template globally
+uvtemplate
+
+# Option B: One-liner (no install needed)
+uvx --from git+https://github.com/tinof/simple-modern-uv uvtemplate
+```
+
+### Daily Development Workflow
+
+```shell
+cd my-project
+
+# Install/sync dependencies
+uv sync --all-extras
+
+# Format and auto-fix before committing
+make fmt
+
+# Verify everything passes (CI-equivalent)
+make check
+
+# Run tests
+uv run pytest
+
+# Run a specific test
+uv run pytest -k "test_name"
+```
+
+### Adding Dependencies
+
+```shell
+# Add a runtime dependency
+uv add requests
+
+# Add a dev-only dependency
+uv add --dev pytest-cov
+
+# Upgrade all dependencies
+make upgrade
+```
+
+### Global Python Tools
+
+With `uv`, you no longer need `pipx` or `brew` for Python CLI tools:
+
+```shell
+uv tool install ruff
+uv tool install httpie
+uv tool install cookiecutter
+
+# Upgrade a tool
+uv tool upgrade ruff
+
+# List installed tools
+uv tool list
+```
+
 ## Why a New Python Project Template?
 
 > **The Story So Far**

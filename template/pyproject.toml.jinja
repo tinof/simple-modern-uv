@@ -13,7 +13,7 @@ authors = [
 ]
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.11,<4.0"
+requires-python = ">=3.12,<4.0"
 dynamic = ["version"]
 
 # https://pypi.org/classifiers/
@@ -26,7 +26,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
@@ -50,9 +49,7 @@ dev = [
     "pytest-sugar>=1.1.1",
     "ruff>=0.14.11",
     "codespell>=2.4.1",
-    "rich>=14.2.0",
     "basedpyright>=1.37.1",
-    "funlog>=0.2.1",
 ]
 
 [project.scripts]
@@ -90,6 +87,7 @@ packages = ["src/{{ package_module }}"]
 [tool.ruff]
 # Set as desired, typically 88 (black standard) or 100 (wide).
 line-length = 100
+target-version = "py312"
 
 [tool.ruff.lint]
 select = [
@@ -134,7 +132,7 @@ ignore = [
 # than mypy and with a good extension for VSCode/Cursor.
 # https://marketplace.visualstudio.com/items?itemName=detachhead.basedpyright
 # https://docs.basedpyright.com/latest/configuration/config-files/#sample-pyprojecttoml-file
-include = ["src", "tests", "devtools"]
+include = ["src", "tests"]
 # By default BasedPyright is very strict, so you almost certainly want to disable
 # some of the rules.
 # First, these turn off warnings about (yes) how you ignore warnings:

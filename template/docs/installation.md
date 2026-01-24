@@ -25,3 +25,18 @@ Now you can use uv to install a current Python environment:
 ```shell
 uv python install 3.13 # Or pick another version.
 ```
+
+## Global Tools
+
+Since you have `uv` installed, you do not need `pipx` or `brew` for Python CLI tools.
+Install global tools directly with `uv tool`:
+
+```shell
+uv tool install ruff
+uv tool install cookiecutter
+uv tool install httpie
+```
+
+These are installed globally and available from any directory.
+To upgrade a tool: `uv tool upgrade <tool-name>`
+To list installed tools: `uv tool list`
