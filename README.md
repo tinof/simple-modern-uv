@@ -5,10 +5,10 @@ Appropriately enough, the comic is out of date.)
 
 # simple-modern-uv
 
+[![Follow @ojoshe on X](https://img.shields.io/badge/follow_%40ojoshe-black?logo=x&logoColor=white)](https://x.com/ojoshe)
 [![image](https://img.shields.io/pypi/pyversions/uvtemplate.svg)](https://pypi.python.org/pypi/uvtemplate)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Copier](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/copier-org/copier/master/img/badge/badge-grayscale-border.json)](https://github.com/copier-org/copier)
-[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/ojoshe)](https://x.com/ojoshe)
 
 ## What is This?
 
@@ -388,7 +388,8 @@ look for `changeme` in the code.
 Once you have the template set up, you will need to check the code into Git for uv to
 work.
 [Create a new GitHub repo](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository)
-and add your initial code:
+— make sure to create it as an **empty repo** (don't add a README, .gitignore, or
+license, since the template already provides these) — and add your initial code:
 
 ```shell
 cd PROJECT
@@ -462,64 +463,9 @@ For [Conda](https://github.com/conda/conda) dependencies, also consider the newe
 
 ## Maintaining This Template
 
-If you’re contributing to this template or forking it for your own use, here’s the
-workflow for keeping dependencies up to date:
-
-### Testing and Updating Dependencies
-
-1. **Instantiate the template to a test directory:**
-
-   ```shell
-   mkdir -p /tmp/template-test
-   cd /tmp/template-test
-   copier copy --defaults /path/to/simple-modern-uv test-project
-   cd test-project
-   git init && git add . && git commit -m "Initial commit"
-   ```
-
-2. **Install and test:**
-
-   ```shell
-   uv sync --all-extras
-   uv run pytest
-   uv run python devtools/lint.py
-   ```
-
-3. **Check for newer versions:**
-
-   ```shell
-   # See what versions were actually installed
-   cat uv.lock | grep -E "^name = |^version = "
-   ```
-
-4. **Compare to template minimums and backfill updates:**
-
-   Compare the installed versions in `uv.lock` against the minimum versions specified in
-   `template/pyproject.toml.jinja`. Update the template’s minimum versions to match the
-   latest stable releases that pass all tests.
-
-5. **Check for uv updates:**
-
-   ```shell
-   # Check your local version
-   uv --version
-   
-   # Check latest release
-   curl -s https://api.github.com/repos/astral-sh/uv/releases/latest | grep tag_name
-   ```
-
-   Update the uv version in `template/.github/workflows/ci.yml` and
-   `template/.github/workflows/publish.yml` if needed.
-
-### Current Versions to Track
-
-- **Python dev dependencies** in `template/pyproject.toml.jinja`:
-
-  - pytest, pytest-sugar, ruff, codespell, rich, basedpyright, funlog
-
-- **uv version** in GitHub Actions workflows
-
-- **Python version support** (currently 3.11–3.14)
+If you’re contributing to this template or forking it for your own use, see
+[**updating.md**](updating.md) for the full process to check for new versions, update
+the template, and verify changes in a downstream project.
 
 ## Contributing
 
