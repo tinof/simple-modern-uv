@@ -76,8 +76,8 @@ PY
 
 Also check:
 
-- **GitHub Actions** (`actions/checkout`, `astral-sh/setup-uv`): review releases, then
-  resolve the commit SHA of the chosen tag, e.g.
+- **GitHub Actions** (`actions/checkout`, `astral-sh/setup-uv`, `oven-sh/setup-bun`):
+  review releases, then resolve the commit SHA of the chosen tag, e.g.
   `git ls-remote --tags https://github.com/astral-sh/setup-uv | grep v9.0.0`. Dependabot
   in generated projects proposes these bumps too.
 - **The uv checksum** for the pinned version:
@@ -85,6 +85,9 @@ Also check:
 - **The uv changelog** for breaking changes when moving to a new minor line
   (`required-version` in `template/uv.toml` pins one minor line).
   See the [uv changes research](docs/project/research/research-uv-changes.md).
+- **Bun and npm-registry tools** (`bun`, `skills`, `skills-ref`): check publish dates
+  with `curl -s https://registry.npmjs.org/<package>` (the `time` field) and pick
+  versions at least 14 days old.
 - **New Python releases** for the CI matrix and classifiers.
 
 ### Supply Chain Hygiene
@@ -100,8 +103,11 @@ These practices follow
   versions and check for advisories (for example on [osv.dev](https://osv.dev)). Review
   the full rendered `uv.lock` diff, not just direct packages.
 - **Pin:** full commit SHAs for actions, exact versions for build backends and executed
-  tools (`copier@X.Y.Z`, `flowmark-rs@X.Y.Z`, npm tools with a frozen `before` date and
-  lifecycle scripts disabled).
+  tools (`copier@X.Y.Z`, `flowmark-rs@X.Y.Z`, `skills@X.Y.Z`). npm-registry tools run
+  through Bun’s `bunx --ignore-scripts --minimum-release-age=1209600`, so lifecycle
+  scripts stay off and the same 14-day cool-off applies.
+  Keep the `=` form, and use Bun 1.4.4 or newer: older `bunx` versions accept the flag
+  but do not enforce it.
 - Avoid new dependencies when a little first-party code will do.
 
 ## Step 2: Update the Template Files
@@ -117,6 +123,8 @@ These practices follow
 - **Action SHAs** and version comments in all workflow files (template and this repo).
 - **Python matrix** in `template/.github/workflows/ci.yml`, the classifiers in
   `template/pyproject.toml.jinja`, and the README badge.
+- **Bun version** (`BUN_VERSION` in this repo’s `.github/workflows/ci.yml`) and the
+  `skills@X.Y.Z` / `skills-ref@X.Y.Z` pins in the README and CI.
 - **Pinned Copier version** (`copier@X.Y.Z`) everywhere it appears: `copier.yml`,
   README, AGENTS.md, the skill references, generated `pyproject.toml` comments, and CI.
 - **The agent skill** (`skills/simple-modern-uv/`): update the FAQ and checklists if
@@ -125,7 +133,7 @@ These practices follow
 Find every pin quickly with:
 
 ```shell
-grep -rnE 'copier@|flowmark-rs@|version: "|checksum|required-version|UV_VERSION|@[0-9a-f]{40}' \
+grep -rnE 'copier@|flowmark-rs@|skills(-ref)?@|version: "|checksum|required-version|_VERSION|@[0-9a-f]{40}' \
   --exclude-dir=.git .
 ```
 

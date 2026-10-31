@@ -42,12 +42,14 @@ A generated project includes:
 Install the [simple-modern-uv skill](skills/simple-modern-uv/SKILL.md) with the
 [skills CLI](https://github.com/vercel-labs/skills).
 It follows the [Agent Skills](https://agentskills.io) format and works with Claude Code,
-Codex, Cursor, Gemini CLI, and other compatible agents:
+Codex, Cursor, Gemini CLI, and other compatible agents.
+It runs with [Bun](https://bun.sh)’s `bunx` (no npm needed), with lifecycle scripts off
+and the same 14-day cool-off (in seconds) the template uses for Python packages.
+Use Bun 1.4.4 or newer: older `bunx` versions silently ignore the cool-off.
 
 ```shell
-NPM_CONFIG_IGNORE_SCRIPTS=true NPM_CONFIG_BEFORE=2026-07-31T18:59:05Z \
-  npx --yes skills@1.5.18 add tinof/simple-modern-uv \
-    --skill simple-modern-uv --yes
+bunx --ignore-scripts --minimum-release-age=1209600 skills@1.5.18 \
+  add tinof/simple-modern-uv --skill simple-modern-uv --yes
 ```
 
 Then describe the outcome you want:
