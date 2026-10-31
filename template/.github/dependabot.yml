@@ -1,0 +1,15 @@
+# Keep the SHA-pinned GitHub Actions in .github/workflows/ current.
+# Dependabot updates both the commit SHA and the version comment.
+# Python dependencies are upgraded deliberately with `make upgrade` instead.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    # Supply-chain cool-off, matching uv.toml: only propose releases this old.
+    cooldown:
+      default-days: 14
+    groups:
+      github-actions:
+        patterns: ["*"]

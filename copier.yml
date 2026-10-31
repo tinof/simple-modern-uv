@@ -1,35 +1,54 @@
 # Copier configuration.
 
-_min_copier_version: "9.4.0"
+# 9.5.0 is the floor where question validators are reliably enforced on
+# --data (non-interactive) answers and computed/dependent defaults (e.g.
+# deriving package_module from package_name) behave consistently.
+_min_copier_version: "9.5.0"
 _subdirectory: template
-_message_after_copy: | 
+_message_after_copy: |
     Your package template has been copied!
 
-    Remember to look for any unfilled `changeme` strings and confirm the license!
-    By default this template uses MIT license.
-    See `license` in pyproject.yaml and update the LICENSE file. 
+    Remember to look for any unfilled `changeme` strings!
+    The license and publishing setup follow your package_license and
+    publish_to_pypi answers; change them later with, e.g.:
+    uvx --exclude-newer "14 days" copier@9.19.1 update --data package_license=Apache-2.0
 
     Next steps:
-    
+
     cd PROJECT
-    git init
-    # Make license or other initial adjustments if needed.
+    git init --initial-branch=main
     git add .
     git commit -m "Initial commit from simple-modern-uv."
-    # Create repo on GitHub.
+    # Sync after the first commit so dynamic versioning gives the editable
+    # install a real version (not 0.0.0). This creates uv.lock; commit it so
+    # CI installs reproducibly with --locked and verifies this file is current.
+    make install
+    git add uv.lock
+    git commit -m "Add uv.lock."
+    # Create an empty repo on GitHub, then:
     git remote add origin git@github.com:OWNER/PROJECT.git  # or https://...
-    git branch -M main
     git push -u origin main
 
 package_name:
     type: str
-    help: What is the package name? (This will be the GitHub repo and PyPI package name, so use CamelCase, dash-case, or snake_case. This is the only required field.)
+    help: What is the package name? (This will be the GitHub repo and PyPI package name. Recommended convention is kebab-case, like "my-package"; CamelCase and snake_case also work. This is the only required field.)
     default: changeme
 
 package_module:
     type: str
-    help: Package module name? (This is the Python module, so use snake_case. Or press enter to fill in later.)
-    default: changeme
+    help: Package module name? (This is the Python module, so use snake_case. Or press enter to derive it from the package name.)
+    # Derive a valid module name from the package name so dash-case or CamelCase
+    # names (fine for GitHub/PyPI) don't silently produce a broken Python module.
+    default: "{{ package_name|lower|replace('-', '_') }}"
+    # A Python module name must be a valid identifier, conventionally lowercase
+    # snake_case, and not a reserved word; dashes/spaces/leading digits or keywords
+    # produce code that won't import (e.g. `from .polars-row-collector import *` or
+    # `from .class import *`).
+    validator: >-
+        {% set py_keywords = ["and", "as", "assert", "async", "await", "break", "class", "continue", "def", "del", "elif", "else", "except", "finally", "for", "from", "global", "if", "import", "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise", "return", "try", "while", "with", "yield"] %}
+        {% if not package_module.isidentifier() or package_module != package_module.lower() or package_module in py_keywords %}
+        package_module must be a lowercase, snake_case Python module name and not a reserved word (no dashes, spaces, leading digits, or keywords like "class"). For example, use "polars_row_collector" instead of "polars-row-collector".
+        {% endif %}
 
 package_description:
     type: str
@@ -50,3 +69,26 @@ package_github_org:
     type: str
     help: Package GitHub org or username? (Press enter to fill in later.)
     default: changeme
+
+package_license:
+    type: str
+    help: Which license? (Default MIT. Choose Proprietary if this is not open source, or None to decide later.)
+    default: MIT
+    # Values are SPDX identifiers (except Proprietary and None). None renders no
+    # LICENSE file and no license field, for choosing later. Defaults here must stay
+    # behavior-preserving so `copier update --defaults` is a no-op for existing
+    # projects; see "Changing Template Questions" in updating.md.
+    choices:
+        "MIT": MIT
+        "Apache-2.0": Apache-2.0
+        "BSD-3-Clause": BSD-3-Clause
+        "AGPL-3.0-or-later": AGPL-3.0-or-later
+        "Proprietary (not open source)": Proprietary
+        "None (choose later)": "None"
+
+publish_to_pypi:
+    type: bool
+    help: >-
+        Publish this package to PyPI? (Yes adds the release workflow and publishing
+        docs. Choose No for a private package or an app you won't publish.)
+    default: yes

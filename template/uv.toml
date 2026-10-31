@@ -1,0 +1,4 @@
+# Keep resolution-affecting settings project-owned. The Makefile and CI select this
+# file explicitly so user- or system-level uv settings cannot make uv.lock nonportable.
+required-version = ">=0.13.1,<0.14"
+exclude-newer = "14 days"
