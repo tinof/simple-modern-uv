@@ -1,0 +1,3 @@
+# Paths excluded from flowmark doc formatting (see Makefile: `make format`).
+# Uses gitignore syntax. Local third-party checkouts (also gitignored):
+attic/

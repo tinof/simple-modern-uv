@@ -1,0 +1,120 @@
+# FAQ: Common Problems
+
+Failure modes seen in real setups and migrations, with fixes.
+Check here before improvising.
+
+## Build Fails: “This does not appear to be a Git project”
+
+`uv-dynamic-versioning` reads the version from git.
+The project must be a git repo with at least one commit before `uv build` (or any
+build-backend invocation, including the editable install during `uv sync`) can resolve a
+version. Fix:
+`git init --initial-branch=main && git add . && git commit -m "Initial commit"`.
+
+## Version Is 0.0.0, 0.1.devN, or Otherwise Wrong
+
+No git tag yet: dynamic versioning derives the version from the latest `v*` tag.
+
+- New project: tag `v0.1.0` when ready to release; dev versions before that are normal
+  and harmless for CI.
+- Migrated package already on PyPI at X.Y.Z: the first tag must be **greater** than
+  X.Y.Z (e.g. `vX.Y.(Z+1)`), or the publish will be rejected as a duplicate/downgrade.
+- Tag exists but ignored: tags must look like `v1.2.3`; also check CI uses
+  `fetch-depth: 0` (the template’s workflows do) so tags are available.
+- `importlib.metadata` still reports an old version after committing or tagging: the
+  editable install’s metadata is captured at sync time and uv won’t refresh it on its
+  own. Run `UV_CONFIG_FILE=uv.toml uv sync --reinstall-package <module>` (and sync only
+  after the first commit on new projects).
+
+## `uv sync` Fails on Python Version
+
+The template requires Python 3.12+. `UV_CONFIG_FILE=uv.toml uv python install` downloads
+a managed interpreter; pin one for the project with
+`UV_CONFIG_FILE=uv.toml uv python pin 3.12` (writes `.python-version`). If uv itself
+errors with “required-version”, upgrade uv: the template supports the reviewed uv 0.13
+line (`>=0.13.1,<0.14`), matching its pinned CI toolchain.
+Versions older than uv 0.9.17 may instead fail while parsing the relative duration
+`"14 days"`, before they can report the project’s required version.
+Treat that parse error the same way and upgrade uv first.
+
+## Copier Renders an Old Template Version
+
+Copier uses the template repo’s latest git tag, not `main`. If a render lacks recent
+changes (for example it still has `devtools/lint.py`), the newest changes are not yet
+released. Use the latest release, or pass `--vcs-ref=main` deliberately to test
+unreleased changes (record why; future updates follow tags again).
+
+## Claude Code Cloud Session Has the Wrong uv
+
+Cloud containers may ship an older uv than `uv.toml` requires.
+The generated `.claude/hooks/session-start.sh` installs the pinned uv and runs
+`make install` at session start when `CLAUDE_CODE_REMOTE=true`. If a project predates
+the hook, run `uv self update <version>` (or the official installer for that version),
+or adopt the hook from a fresh render.
+
+## Ruff Rewrites Python Blocks in Markdown
+
+Ruff 0.16 and later include Markdown by default and can format Python code fences.
+The template gives Flowmark ownership of Markdown and sets
+`[tool.ruff] extend-exclude = ["*.md"]` so the tools do not compete.
+Add that setting when updating a project that adopted Ruff separately or predates this
+template policy.
+
+## BasedPyright Erupts with Hundreds of Errors on Legacy Code
+
+Expected on first run over older code.
+Don’t rewrite the codebase to satisfy it, and don’t turn it off:
+
+1. Start from the template’s `[tool.basedpyright]` block, which already relaxes the
+   noisiest rules.
+2. Temporarily disable the loudest remaining categories (uncomment the provided
+   `report*` lines, e.g. `reportUnknownVariableType = false`), leaving a comment to
+   ratchet later.
+3. Existing mypy-style `# type: ignore` comments still work; prefer fixing real findings
+   over suppressing them.
+
+## codespell Flags Names or Legacy Prose
+
+Add exceptions in `pyproject.toml`: `[tool.codespell] ignore-words-list = "word1,word2"`
+or `skip = "path1,path2"`.
+
+## Conflicts During `copier update`
+
+Copier writes `*.rej` files (or inline conflict markers) where the template and local
+edits collide. Resolve each by hand, keeping the project’s intent; delete the `.rej`
+files; re-run `make fmt`, `make check`, and `make test`. A dirty working tree also
+blocks updates; commit or stash first.
+
+## `publish.yml` Came Back or License Reverted After an Update
+
+The project predates the `publish_to_pypi` and `package_license` questions and the
+update filled them with defaults.
+Re-run the update passing the project’s reality, e.g.
+`uvx --exclude-newer "14 days" copier@9.19.1 update --data publish_to_pypi=false`, and
+see “Reconciling New Questions on Update” in [customize.md](customize.md).
+
+## Publish Workflow Fails with OIDC or Permission Errors
+
+The one-time PyPI Trusted Publisher setup hasn’t been done for this repo (or the
+workflow filename doesn’t match what PyPI was told).
+Follow `docs/publishing.md` in the project; no API tokens are needed.
+
+## Lockfile Resolution Seems Stale or Refuses a Brand-New Release
+
+The checked-in `uv.toml` sets a 14-day supply-chain cooling-off window, so releases
+newer than that are deliberately invisible.
+The Makefile and CI select that file with `UV_CONFIG_FILE`; CI also sets the equivalent
+`UV_EXCLUDE_NEWER` value.
+This is a feature; don’t remove it to get a day-old package or let ambient user settings
+change the lock. Use the project’s standard commands when debugging resolution
+differences; make any reviewed exception an explicit, documented per-invocation
+override.
+
+## Tests Pass Locally but CI Fails on a Python Version
+
+The CI matrix runs 3.12–3.15. Most failures are version-specific syntax/stdlib use; run
+the failing version locally with `UV_CONFIG_FILE=uv.toml uv run --python 3.12 pytest`.
+
+<!-- This document follows common-doc-guidelines.md.
+See github.com/jlevy/practical-prose and review guidelines before editing.
+-->

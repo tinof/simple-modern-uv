@@ -1,0 +1,7 @@
+"""Allow running the package with `python -m {{ package_module }}`."""
+
+from {{ package_module }} import main
+
+# Guarded so test collection (which imports every module under src/) has no side effects.
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,103 @@
+# Project Instructions for AI Agents
+
+Instructions for AI coding agents working on {{ package_name }}.
+
+This file follows the [AGENTS.md](https://agents.md) convention.
+Claude Code reads `CLAUDE.md`, which imports this file through its `@AGENTS.md` line, so
+both instruction paths stay aligned.
+
+## Quick Reference
+
+| Task | Command |
+| --- | --- |
+| Install all deps into `.venv` | `make install` |
+| Format and auto-fix (mutates files) | `make fmt` |
+| Check everything, like CI (read-only) | `make check` |
+| Type check only | `make typecheck` |
+| Run tests | `make test` |
+| Run one test | `uv run pytest -k "test_name"` |
+| Add a dependency | see Dependencies below |
+| Build wheel and sdist | `make build` |
+| Upgrade deps (respecting the cool-off) | `make upgrade` |
+
+`make` with no target runs install, fmt, check, and test.
+What each target does:
+
+```bash
+make install     # uv sync --all-extras --all-groups
+make fmt         # codespell -w, ruff check --fix, ruff format
+make check       # codespell, ruff check, ruff format --check, basedpyright (same as CI)
+make test        # uv run pytest
+make build       # locked, non-isolated uv build (wheel and sdist)
+```
+
+Or call uv directly with the checked-in configuration:
+`UV_CONFIG_FILE=uv.toml uv run pytest tests/test_foo.py` or
+`UV_CONFIG_FILE=uv.toml uv run python -m {{ package_module }}`.
+
+## Workflow
+
+1. Before starting: `make install` (skip if `.venv` is current).
+2. Write or update tests alongside the change; prefer writing the failing test first.
+3. After editing: `make fmt` to format and auto-fix.
+4. Before committing: `make check` and `make test` must both pass.
+   Fix the cause of a type or lint error rather than suppressing it.
+
+## Package Manager
+
+**Strictly use `uv`** for all Python operations: `uv add`, `uv run`, `uv sync`. Never
+use `pip`, `pip install`, `python -m pip`, poetry, or `requirements.txt` files.
+Run tools through `uv run` (for example `uv run pytest`), not a globally installed copy.
+
+## Conventions
+
+- **Layout**: `src/` layout; code in `src/{{ package_module }}/`, tests in `tests/`.
+
+- **Python**: 3.12+ only; use modern typing: full annotations on every function,
+  `list[str]` not `List[str]`, `X | None` not `Optional[X]`, no `from __future__`. Avoid
+  `Any` and `# type: ignore` unless truly necessary, and give the rule name when you
+  must ignore (`# pyright: ignore[reportFoo]`).
+
+- **Lint/format**: ruff (line length 100) plus codespell; type checking is
+  [basedpyright](https://docs.basedpyright.com/). Tool settings live in
+  `pyproject.toml`; project-owned uv settings live in `uv.toml`.
+
+- **Tests**: pytest; `test_*` functions in `tests/test_*.py`. Pytest runs in strict
+  mode, so register custom markers in `pyproject.toml`.
+
+- **Dependencies**: add with `UV_CONFIG_FILE=uv.toml uv add --exclude-newer "14 days"`
+  (runtime) or `UV_CONFIG_FILE=uv.toml uv add --dev --exclude-newer "14 days"` (dev).
+  Commit `uv.lock`. Vet new packages first (correct spelling, actually needed); see the
+  Supply Chain Hardening section in `docs/development.md`.
+
+- **Versioning**: the version comes from git tags via dynamic versioning; never edit a
+  version number in `pyproject.toml`.
+  {%- if publish_to_pypi %}
+
+- **Publishing**: releases are published to PyPI by creating a GitHub release tagged
+  `vX.Y.Z` (see `docs/publishing.md`).
+  {%- endif %}
+
+- **CI**: `.github/workflows/ci.yml` runs the `make check` steps and pytest on every
+  supported Python version, installing with `uv sync --locked`. If you change
+  `pyproject.toml`, re-run `make install` so `uv.lock` stays current.
+
+See [docs/development.md](docs/development.md) for full developer workflows.
+
+## Template Maintenance
+
+This project was built from
+[simple-modern-uv](https://github.com/tinof/simple-modern-uv).
+Routine project work uses the instructions above; do not fetch the upstream template for
+every task.
+
+For toolchain changes, selective adoption of another template feature, or a Copier
+update, use the portable
+[simple-modern-uv skill](https://github.com/tinof/simple-modern-uv/tree/main/skills/simple-modern-uv).
+It preserves project-specific choices and distinguishes selective changes from full
+template management.
+`.copier-answers.yml` records this project’s update lineage.
+
+<!-- This document follows common-doc-guidelines.md.
+See github.com/jlevy/practical-prose and review guidelines before editing.
+-->
