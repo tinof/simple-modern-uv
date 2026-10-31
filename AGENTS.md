@@ -15,10 +15,10 @@ Validation means rendering the template and exercising the render:
 make format
 make format-check
 
-# Render the template non-interactively (smoke test). Without --vcs-ref, Copier
-# renders the working tree, including uncommitted changes:
+# Render the template non-interactively (smoke test). Always pass --vcs-ref=HEAD:
+# without it Copier renders the latest release tag, not your changes.
 SMOKE_DIR=$(mktemp -d)
-uvx --exclude-newer "14 days" copier@9.19.1 copy --defaults \
+uvx --exclude-newer "14 days" copier@9.19.1 copy --defaults --vcs-ref=HEAD \
   --data package_name=smoke-test \
   --data package_github_org=testorg . "$SMOKE_DIR"
 
