@@ -104,8 +104,10 @@ These practices follow
   the full rendered `uv.lock` diff, not just direct packages.
 - **Pin:** full commit SHAs for actions, exact versions for build backends and executed
   tools (`copier@X.Y.Z`, `flowmark-rs@X.Y.Z`, `skills@X.Y.Z`). npm-registry tools run
-  through Bun’s `bunx --ignore-scripts --minimum-release-age 1209600`, so lifecycle
+  through Bun’s `bunx --ignore-scripts --minimum-release-age=1209600`, so lifecycle
   scripts stay off and the same 14-day cool-off applies.
+  Keep the `=` form, and use Bun 1.4.4 or newer: older `bunx` versions accept the flag
+  but do not enforce it.
 - Avoid new dependencies when a little first-party code will do.
 
 ## Step 2: Update the Template Files

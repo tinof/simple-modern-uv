@@ -24,6 +24,9 @@ env:
   UV_CHECKSUM: "eadd9d27c134ab5ac1ffd4473b97a741407f3ea238288f03121fc4deddf90220"
   COPIER_SPEC: "copier@9.19.1"
   # Bun runs the npm-registry tools (bunx); see updating.md.
+  # Bun before 1.4.4 ignores bunx --minimum-release-age, so until 1.4.4 clears the
+  # 14-day cool-off (2026-11-05) only the exact skills-ref pin protects this job.
+  # Then bump to 1.4.4+ and the flag below applies to transitive packages too.
   BUN_VERSION: "1.4.3"
   # Default answers for test renders.
   RENDER_ARGS: >-
@@ -267,7 +270,7 @@ jobs:
       - name: Validate skill structure and frontmatter
         # No lifecycle scripts, and only package releases past the 14-day cool-off.
         run: >-
-          bunx --ignore-scripts --minimum-release-age 1209600
+          bunx --ignore-scripts --minimum-release-age=1209600
           skills-ref@0.1.5 validate skills/simple-modern-uv
       - name: Check agent installation selects this repository's public skill
         run: grep -q -- '--skill simple-modern-uv --yes' README.md

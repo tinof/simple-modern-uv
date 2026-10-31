@@ -44,10 +44,11 @@ Install the [simple-modern-uv skill](skills/simple-modern-uv/SKILL.md) with the
 It follows the [Agent Skills](https://agentskills.io) format and works with Claude Code,
 Codex, Cursor, Gemini CLI, and other compatible agents.
 It runs with [Bun](https://bun.sh)’s `bunx` (no npm needed), with lifecycle scripts off
-and the same 14-day cool-off (in seconds) the template uses for Python packages:
+and the same 14-day cool-off (in seconds) the template uses for Python packages.
+Use Bun 1.4.4 or newer: older `bunx` versions silently ignore the cool-off.
 
 ```shell
-bunx --ignore-scripts --minimum-release-age 1209600 skills@1.5.18 \
+bunx --ignore-scripts --minimum-release-age=1209600 skills@1.5.18 \
   add tinof/simple-modern-uv --skill simple-modern-uv --yes
 ```
 
