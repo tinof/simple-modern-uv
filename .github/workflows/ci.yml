@@ -23,6 +23,8 @@ env:
   UV_VERSION: "0.13.1"
   UV_CHECKSUM: "eadd9d27c134ab5ac1ffd4473b97a741407f3ea238288f03121fc4deddf90220"
   COPIER_SPEC: "copier@9.19.1"
+  # Bun runs the npm-registry tools (bunx); see updating.md.
+  BUN_VERSION: "1.4.3"
   # Default answers for test renders.
   RENDER_ARGS: >-
     --data package_name=smoke-test
@@ -258,11 +260,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Install Bun (official Oven action)
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
       - name: Validate skill structure and frontmatter
-        env:
-          NPM_CONFIG_IGNORE_SCRIPTS: "true"
-          NPM_CONFIG_BEFORE: "2026-06-29T03:27:33Z"
-        run: npx --yes skills-ref@0.1.5 validate skills/simple-modern-uv
+        # No lifecycle scripts, and only package releases past the 14-day cool-off.
+        run: >-
+          bunx --ignore-scripts --minimum-release-age 1209600
+          skills-ref@0.1.5 validate skills/simple-modern-uv
       - name: Check agent installation selects this repository's public skill
         run: grep -q -- '--skill simple-modern-uv --yes' README.md
       - name: Check that relative links in skill docs resolve
