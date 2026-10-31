@@ -171,6 +171,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       UV_EXCLUDE_NEWER: "14 days"
+      # Releases before v0.3 did not derive package_module from package_name, so
+      # pass it explicitly to make old and fresh renders comparable.
+      OLD_ARGS: "--data package_module=smoke_test"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -187,7 +190,7 @@ jobs:
           PREV_TAG=$(git describe --tags --abbrev=0 "$GITHUB_SHA")
           echo "Updating from $PREV_TAG to $GITHUB_SHA"
           eval uvx "$COPIER_SPEC" copy --defaults --vcs-ref="$PREV_TAG" \
-            $RENDER_ARGS "$GITHUB_WORKSPACE" /tmp/old
+            $RENDER_ARGS $OLD_ARGS "$GITHUB_WORKSPACE" /tmp/old
           cd /tmp/old
           git init -q --initial-branch=main
           git add -A
@@ -210,7 +213,7 @@ jobs:
         run: |
           eval uvx "$COPIER_SPEC" copy --defaults \
             --vcs-ref="$(git describe --tags --abbrev=0 "$GITHUB_SHA")" \
-            $RENDER_ARGS "$GITHUB_WORKSPACE" /tmp/old2
+            $RENDER_ARGS $OLD_ARGS "$GITHUB_WORKSPACE" /tmp/old2
           cd /tmp/old2
           git init -q --initial-branch=main
           git add -A
